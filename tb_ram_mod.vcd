@@ -1,0 +1,76 @@
+$date
+	Mon Mar 11 22:02:56 2024
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1s
+$end
+$scope module tb_ram_mod $end
+$var wire 4 ! q [3:0] $end
+$var reg 4 " addr [3:0] $end
+$var reg 1 # clk $end
+$var reg 4 $ data [3:0] $end
+$var reg 1 % shift $end
+$var reg 1 & we $end
+$var reg 1 ' weT $end
+$scope module duut $end
+$var wire 4 ( addr [3:0] $end
+$var wire 1 ) clk $end
+$var wire 4 * data [3:0] $end
+$var wire 4 + q [3:0] $end
+$var wire 1 , shift $end
+$var wire 1 - we $end
+$var wire 1 . weT $end
+$var reg 4 / addr_reg [3:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+#0
+$dumpvars
+bx /
+x.
+x-
+x,
+bx +
+b1010 *
+0)
+b10 (
+x'
+x&
+x%
+b1010 $
+0#
+b10 "
+bx !
+$end
+#2
+b10 /
+1#
+1)
+#4
+0#
+0)
+#6
+1#
+1)
+#8
+0#
+0)
+#10
+b1010 !
+b1010 +
+1#
+1)
+1&
+1-
+#12
+0#
+0)
+#14
+1#
+1)
+#15
+0&
+0-

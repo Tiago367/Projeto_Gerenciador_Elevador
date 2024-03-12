@@ -1,21 +1,23 @@
-// Modulo do fluxo de dados para o projeto "Gerenciador de Glevadores"
+// Modulo do fluxo de dados para o projeto "Gerenciador de Elevadores"
 module FD (
  input clock,
  input [3:0] origem,
  input [3:0] destino,
- input pronto,
+ input novaEntrada,
  input we_andarAtual,
- input shift_ram,
- input we_ram,
- input weT_ram,
+ input shift,
+ input enableRAM,
+ input enableTopRAM,
  input select1,
  input select2,
- output parar,
- output pronto_borda,
+ input zeraT,
+ input contaT,
+ output chegouDestino,
+ output prontoBorda,
+ output avanca,
  output [3:0] proxParada,
  output [3:0] andarAtual
 );
-
 //Declaração de fios gerais 
 wire [3:0] proxAndarD, proxAndarS ; // proximo andar caso suba e proximo andar caso desça
 
@@ -49,26 +51,35 @@ comparador_85 destino_comp(
     .B      (andarAtual), 
     .ALBo   (), 
     .AGBo   (), 
-    .AEBo   (parar)
+    .AEBo   (chegouDestino)
 );
 
 sync_ram_16x4_mod fila_ram(
     .clk    (clock),
-    .we     (we_ram),
+    .we     (enableRAM),
     .data   (mux1),
     .addr   (4'b0000),
-    .shift  (shift_ram),
-    .weT    (weT_ram),
+    .shift  (shift),
+    .weT    (enableTopRAM),
     .q      (proxParada)
 );
 
 edge_detector detectorDePedido(
     .clock  (clock),
     .reset  (),
-    .sinal  (pronto),
-    .pulso  (pronto_borda)
+    .sinal  (novaEntrada),
+    .pulso  (prontoBorda)
 );
 
+contador_m timer_2seg #(2000,13)(
+    .clock      (clock),
+    .zera_as    (),
+    .zera_s     (zeraT),
+    .conta      (contaT),
+    .Q          (),
+    .fim        (avanca),
+    .meio       ()
+)
 
    
  
