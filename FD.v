@@ -4,7 +4,6 @@ module FD (
  input [3:0] origem,
  input [3:0] destino,
  input novaEntrada,
- input we_andarAtual,
  input shift,
  input enableRAM,
  input enableTopRAM,
@@ -12,9 +11,12 @@ module FD (
  input select2,
  input zeraT,
  input contaT,
+ input clearAndarAtual,
+ input clearSuperRam, 
+ input enableAndarAtual,
  output chegouDestino,
- output prontoBorda,
- output avanca,
+ output bordaNovaEntrada,
+ output fimT,
  output [3:0] proxParada,
  output [3:0] andarAtual
 );
@@ -30,8 +32,8 @@ assign mux2 = select2? proxAndarS : proxAndarD ;
 
 registrador_4 andarAtual_reg (
     .clock      (clock),
-    .clear      (),
-    .enable     (we_andarAtual),
+    .clear      (clearAndarAtual),
+    .enable     (enableAndarAtual),
     .D          (mux2),
     .Q          (andarAtual)
 );
@@ -54,6 +56,7 @@ comparador_85 destino_comp(
     .AEBo   (chegouDestino)
 );
 
+// falta o clear dela
 sync_ram_16x4_mod fila_ram(
     .clk    (clock),
     .we     (enableRAM),
@@ -68,18 +71,19 @@ edge_detector detectorDePedido(
     .clock  (clock),
     .reset  (),
     .sinal  (novaEntrada),
-    .pulso  (prontoBorda)
+    .pulso  (bordaNovaEntrada)
 );
 
-contador_m timer_2seg #(2000,13)(
+// tive que tirar o #(x,y) para compilar
+contador_m timer_2seg(
     .clock      (clock),
     .zera_as    (),
     .zera_s     (zeraT),
     .conta      (contaT),
     .Q          (),
-    .fim        (avanca),
+    .fim        (fimT),
     .meio       ()
-)
+);
 
    
  
