@@ -7,7 +7,7 @@ module comparador_85 (ALBi, AGBi, AEBi, A, B, ALBo, AGBo, AEBo);
 
     assign CSL  = ~A + B + ALBi;
     assign ALBo = ~CSL[4];
-    assign CSG  = A + ~B + AGBi;
+    assign CSG  = A + ~B;
     assign AGBo = ~CSG[4];
     assign AEBo = ((A == B) && AEBi);
 
