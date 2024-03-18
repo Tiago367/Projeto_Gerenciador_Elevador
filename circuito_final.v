@@ -9,9 +9,10 @@ module circuito_final(
 
 );
 
-wire enableAndarAtual, shift, enableRAM, enableTopRAM, select1, select2, chegouDestino; 
-wire bordaNovaEntrada, fimT, contaT, zeraT, clearAndarAtual, clearSuperRam;
-wire [3:0] proxParada, andarAtual;
+wire enableAndarAtual, shift, enableRAM, enableTopRAM, select1, select2, select3, select4, chegouDestino; 
+wire bordaNovaEntrada, fimT, contaT, zeraT, clearAndarAtual, clearSuperRam, carona, finalRam, enableRegOrigem;
+wire enableRegDestino, contaAddrSecundario, zeraAddrSecundario, elevador_subindo;
+wire [3:0] proxParada, andarAtual, saidaSecundaria;
 
 
 
@@ -27,6 +28,8 @@ FD fluxodeDados (
 .enableTopRAM       (enableTopRAM), // enable top ram destinos
 .select1            (select1), // seleciona a origem ou destino
 .select2            (select2), // seleciona andar pra cima ou pra baixo
+.select3            (select3),
+.select4            (select4),
 .chegouDestino      (chegouDestino), // chegou no andar
 .bordaNovaEntrada   (bordaNovaEntrada), // borda do pronto
 .proxParada         (proxParada), // saida da ram com o prox destino
@@ -35,7 +38,15 @@ FD fluxodeDados (
 .contaT             (contaT),
 .zeraT              (zeraT),
 .clearAndarAtual    (clearAndarAtual),
-.clearSuperRam      (clearSuperRam)
+.clearSuperRam      (clearSuperRam),
+.finalRam           (finalRam),
+.saidaSecundaria    (saidaSecundaria),
+.enableRegDestino   (enableRegDestino),
+.enableRegOrigem    (enableRegOrigem),
+.contaAddrSecundario (contaAddrSecundario),
+.zeraAddrSecundario (zeraAddrSecundario),
+.carona             (carona),
+.elevador_subindo   (elevador_subindo)
 );
 
 
@@ -65,7 +76,14 @@ uc_novajogada UC_NOVAJOGADA (
 .enableTopRAM      (enableTopRAM),
 .iniciar           (iniciar),
 .reset             (reset),
-.clock             (clock)
+.clock             (clock),
+.carona            (carona),
+.saidaSecundaria   (saidaSecundaria),
+.select4           (select4),
+.enableRegOrigem   (enableRegOrigem),
+.enableRegDestino  (enableRegDestino),
+.contaAddrSecundario (contaAddrSecundario),
+.zeraAddrSecundario (zeraAddrSecundario)
 );
 
 

@@ -3,20 +3,26 @@ module uc_novajogada(
     input clock,
     input iniciar,
     input reset,
+    input carona,
+    input [3:0]saidaSecundaria,
     output reg select1,
-    output reg enableTopRAM
-    
+    output reg enableTopRAM,
+    output reg select4,
+    output reg enableRegDestino,
+    output reg enableRegOrigem,
+    output reg contaAddrSecundario,
+    output reg zeraAddrSecundario
 );
 
 reg [2:0] Eatual, Eprox;
 
 parameter inicial        = 3'b000;
 parameter inicializa     = 3'b001;
-parameter guarda_origem  = 3'b010;
-parameter espera_destino = 3'b011;
-parameter guarda_destino = 3'b100;
-parameter espera_origem  = 3'b101;
-
+parameter registra_jogada = 3'b010;
+parameter encontra_posicao_origem = 3'b011;
+parameter atualiza_parametros = 3'b100;
+parameter armazena_origem = 3'b101;
+parameter espera_jogada = 3'b110;
 
 
 always @(posedge clock or posedge reset or posedge bordaNovaEntrada) begin
@@ -31,13 +37,13 @@ end
 always @* begin
     case (Eatual)
 
-        inicial:         Eprox = iniciar? inicializa : inicial;
-        inicializa:      Eprox = espera_origem;
-        espera_origem:   Eprox = bordaNovaEntrada? guarda_origem : espera_origem;
-        guarda_origem:   Eprox = espera_destino;
-        espera_destino:  Eprox = guarda_destino;
-        guarda_destino:   Eprox = espera_origem;  
-
+        inicial:                  Eprox = iniciar? inicializa : inicial;
+        inicializa:               Eprox = espera_jogada;
+        espera_jogada:            Eprox = bordaNovaEntrada? registra_jogada : espera_jogada;
+        registra_jogada:          Eprox = encontra_posicao_origem;
+        encontra_posicao_origem:  Eprox = (saidaSecundaria == 4'b0000)? armazena_origem : (carona)? armazena_origem : atualiza_parametros;
+        atualiza_parametros:      Eprox = encontra_posicao_origem;
+        armazena_origem:           Eprox = espera_jogada;
         default:             Eprox = inicializa;
     endcase
 end
@@ -46,25 +52,32 @@ always @* begin
     case (Eatual)
 
     inicializa: begin
-        enableTopRAM = 0;
+        zeraAddrSecundario=1;
+        contaAddrSecundario=0;
     end
 
-    espera_origem: begin
-        enableTopRAM = 0;
+    espera_jogada: begin     
+        zeraAddrSecundario=0;  
     end
 
-    guarda_origem: begin
-        select1 = 1;
-        enableTopRAM = 1;
+    registra_jogada: begin
+        enableRegOrigem=1;
+        enableRegDestino=1;
+        select1=1;
+        select4=1;
     end
 
-    espera_destino: begin
-        enableTopRAM = 0; 
+    encontra_posicao_origem: begin
+        contaAddrSecundario = 1;
+        contaAddrSecundario=0;
     end
 
-    guarda_destino: begin
-        select1 = 0;
-        enableTopRAM = 1;
+    atualiza_parametros: begin
+        select4=0;
+        contaAddrSecundario=1;
+    end
+
+    armazena_origem: begin
     end
 
     endcase

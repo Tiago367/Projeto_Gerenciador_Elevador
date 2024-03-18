@@ -4,12 +4,14 @@ module sync_ram_16x4_mod(
     input        clk,
     input        we, // write enable para escrita no addr dado
     input  [3:0] data,
+    input  [3:0] addrSecundarioAnterior,
     input  [3:0] addrSecundario,
     input  [3:0] addr,
     input        shift,
     input        weT, // write enable top (coloca o dado novo no fim da fila)
     output [3:0] q,
-    output [3:0] saidaSecundaria
+    output [3:0] saidaSecundaria,
+    output [3:0] saidaSecundariaAnterior
 );
 
     // Variavel RAM (armazena dados)
@@ -21,8 +23,8 @@ module sync_ram_16x4_mod(
     // Especifica conteudo inicial da RAM
     // a partir da leitura de arquivo usando $readmemb
     initial begin
-        ram[0] = 4'b0001;
-        ram[1] = 4'b1000;
+        ram[0] = 4'b0010;
+        ram[1] = 4'b0101;
         ram[2] = 0;
         ram[3] = 0;
         ram[4] = 0;
@@ -79,13 +81,14 @@ module sync_ram_16x4_mod(
             ram[13] = ram[14];
             ram[14] = ram[15];
             ram[15] = 0;
-        end    
-
+        end
+        
         addr_reg <= addr;
     end
 
     // Atribuicao continua retorna dado
     assign q = ram[addr_reg];
     assign saidaSecundaria = ram[addrSecundario];
+    assign saidaSecundariaAnterior = ram[addrSecundarioAnterior];
 
 endmodule

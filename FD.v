@@ -18,27 +18,33 @@ module FD (
  input enableAndarAtual,
  input enableRegOrigem,
  input enableRegDestino,
+ input zeraAddrSecundario,
+ input contaAddrSecundario,
  output chegouDestino,
  output bordaNovaEntrada,
  output fimT,
  output [3:0] proxParada,
- input [3:0] andarAtual, // alterei pro TB
- output elevador_subindo
+ output [3:0] andarAtual, // alterei pro TB
+ output elevador_subindo,
+ output finalRam,
+ output carona,
+ output [3:0]saidaSecundaria
 );
 //Declaração de fios gerais 
 wire [3:0] proxAndarD, proxAndarS ; // proximo andar caso suba e proximo andar caso desça
 wire [3:0] saidaRegDestino, saidaRegOrigem;
 wire usuario_subindo, elevadorSubindo;
-wire [3:0]saidaSecundaria;
+wire [3:0] saidaSecundariaAnterior, addrSecundarioAnterior;
 wire proxAndarMaior, saidaSecMaior;
+wire [3:0] addrSecundario;
 
 
 // Multiplexadores
 wire [3:0] mux1, mux2, mux3, mux4;
-assign mux1 = select1? origem : destino ; // fio que entra da "data_in" da ram
+assign mux1 = select1? saidaRegOrigem : saidaRegDestino ; // fio que entra da "data_in" da ram
 assign mux2 = select2? proxAndarS : proxAndarD ;
-assign mux3 = select3? saidaRegOrigem : saidaRegDestino;
-assign mux4 = select4? andarAtual : proxParada;
+assign mux3 = select3? saidaRegOrigem : saidaRegDestino; // redundante
+assign mux4 = select4? andarAtual : saidaSecundariaAnterior;
 
 assign mesmoSentido = (usuario_subindo & elevador_subindo) | (~usuario_subindo & ~elevador_subindo);
 assign carona = mesmoSentido & (proxAndarMaior ^ saidaSecMaior);
@@ -50,11 +56,12 @@ registrador_4 andarAtual_reg (
     .clear      (clearAndarAtual),
     .enable     (enableAndarAtual),
     .D          (mux2),
-    .Q          () //Modificação para TB
+    .Q          (andarAtual) 
 );
 
 //Somador e subtrator do registrador do andar atual
 
+assign addrSecundarioAnterior = addrSecundario - 1;
 assign proxAndarD = andarAtual - 1;
 assign proxAndarS = andarAtual + 1;
 
@@ -67,7 +74,7 @@ comparador_85 destino_comp(
     .A      (proxParada), 
     .B      (andarAtual), 
     .ALBo   (), 
-    .AGBo   (elevador_subindo), 
+    .AGBo   (), 
     .AEBo   (chegouDestino)
 );
 
@@ -76,12 +83,14 @@ sync_ram_16x4_mod fila_ram(
     .clk    (clock),
     .we     (enableRAM),
     .data   (mux1),
-    .addrSecundario (4'b0001), //valor para teste
+    .addrSecundario (addrSecundario), //valor para teste
+    .addrSecundarioAnterior (addrSecundarioAnterior),
     .addr   (4'b0000),
     .shift  (shift),
     .weT    (enableTopRAM),
     .q      (proxParada),
-    .saidaSecundaria (saidaSecundaria)
+    .saidaSecundaria (saidaSecundaria),
+    .saidaSecundariaAnterior (saidaSecundariaAnterior)
 );
 
 edge_detector detectorDePedido(
@@ -129,6 +138,17 @@ comparador_85 sentido_usuario(
     .AEBo   ()
 );
 
+comparador_85 sentido_elevador(
+    .ALBi   (),
+    .AGBi   (), 
+    .AEBi   (1'b1), 
+    .A      (mux4), 
+    .B      (addrSecundario), 
+    .ALBo   (), 
+    .AGBo   (elevador_subindo), 
+    .AEBo   ()
+);
+
 comparador_85 compara_entrada_proxAndar(
     .ALBi   (),
     .AGBi   (), 
@@ -150,5 +170,17 @@ comparador_85 compara_entrada_saidasecundaria(
     .AGBo   (saidaSecMaior), 
     .AEBo   ()
 );
- 
+
+contador_p endereco_secundario(
+    .clock      (clock),
+    .zera_as    (),
+    .zera_s     (zeraAddrSecundario),
+    .conta      (contaAddrSecundario),
+    .Q          (addrSecundario),
+    .fim        (finalRam),
+    .meio       ()
+);
+
+
+
  endmodule
