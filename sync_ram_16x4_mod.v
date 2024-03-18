@@ -46,7 +46,7 @@ module sync_ram_16x4_mod(
     begin
         // Escrita da memoria
         if (we)
-            ram[addr] <= data;
+            ram[addr] = data;
         if (weT) begin
             if(ram[0] == 0) ram[0] = data;
             else if(ram[1] == 4'b0000) ram[1] = data;
