@@ -85,11 +85,25 @@ module sync_ram_16x4_mod(
             ram[15] = 0;
         end
         if(fit) begin
-            i = 15;
-            while (i > $unsigned(addrSecundario)) begin
-                ram[i] = ram[i-1];
-                i = i-1;
-            end
+            if (addrSecundario <= 14) ram[15] = ram[14];
+            if (addrSecundario <= 13) ram[14] = ram[13];
+            if (addrSecundario <= 12) ram[13] = ram[12];
+            if (addrSecundario <= 11) ram[12] = ram[11];
+            if (addrSecundario <= 10) ram[11] = ram[10];
+            if (addrSecundario <= 9) ram[10] = ram[9];
+            if (addrSecundario <= 8) ram[9] = ram[8];
+            if (addrSecundario <= 7) ram[8] = ram[7];
+            if (addrSecundario <= 6) ram[7] = ram[6];
+            if (addrSecundario <= 5) ram[6] = ram[5];
+            if (addrSecundario <= 4) ram[5] = ram[4];
+            if (addrSecundario <= 3) ram[4] = ram[3];
+            if (addrSecundario <= 2) ram[3] = ram[2];
+            if (addrSecundario <= 1) ram[2] = ram[1];
+            if (addrSecundario == 0) ram[1] = ram[0];
+
+            ram[i] = ram[i-1];
+            i = i-1;
+            
             ram[addrSecundario] = data;
         end
         
