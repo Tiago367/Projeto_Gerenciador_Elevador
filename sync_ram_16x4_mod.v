@@ -100,9 +100,6 @@ module sync_ram_16x4_mod(
             if (addrSecundario <= 2) ram[3] = ram[2];
             if (addrSecundario <= 1) ram[2] = ram[1];
             if (addrSecundario == 0) ram[1] = ram[0];
-
-            ram[i] = ram[i-1];
-            i = i-1;
             
             ram[addrSecundario] = data;
         end
