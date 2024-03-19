@@ -19,6 +19,7 @@ module registrador_4 (
 );
 
     reg [3:0] IQ;
+    initial IQ = 0;
 
     always @(posedge clock or posedge clear) begin
         if (clear)

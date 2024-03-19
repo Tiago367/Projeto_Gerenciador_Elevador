@@ -9,6 +9,7 @@ module sync_ram_16x4_mod(
     input  [3:0] addr,
     input        shift,
     input        weT, // write enable top (coloca o dado novo no fim da fila)
+    input        fit,
     output [3:0] q,
     output [3:0] saidaSecundaria,
     output [3:0] saidaSecundariaAnterior
@@ -19,12 +20,13 @@ module sync_ram_16x4_mod(
 
     // Registra endereco de acesso
     reg [3:0] addr_reg;
+    integer i;
 
     // Especifica conteudo inicial da RAM
     // a partir da leitura de arquivo usando $readmemb
     initial begin
-        ram[0] = 4'b0010;
-        ram[1] = 4'b0101;
+        ram[0] = 0;
+        ram[1] = 0;
         ram[2] = 0;
         ram[3] = 0;
         ram[4] = 0;
@@ -81,6 +83,14 @@ module sync_ram_16x4_mod(
             ram[13] = ram[14];
             ram[14] = ram[15];
             ram[15] = 0;
+        end
+        if(fit) begin
+            i = 15;
+            while (i > $unsigned(addrSecundario)) begin
+                ram[i] = ram[i-1];
+                i = i-1;
+            end
+            ram[addrSecundario] = data;
         end
         
         addr_reg <= addr;

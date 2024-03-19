@@ -1,13 +1,17 @@
+`timescale 1ns / 1ns
+
+
 module tb_ram_mod;
 reg clk;
 reg we=0;
-reg [3:0] data;
+reg [3:0] data, addrSecAnt, addrSec;
 reg [3:0] addr;
 reg shift=0;
 reg weT=0;
-wire [3:0]q;
+reg fit=0;
+wire [3:0]q, saidaSecundaria, saidaSecundariaAnterior;
 
-sync_ram_16x4_mod duut (clk,we,data,addr,shift,weT,q);
+sync_ram_16x4_mod duut (clk,we,data,addrSecAnt,addrSec,addr,shift,weT,fit,q,saidaSecundaria,saidaSecundariaAnterior);
 initial clk=0;
 always #2 clk = ~clk;
 
@@ -38,7 +42,20 @@ initial begin
       shift=1;
       #2;
       shift=0;
-      #10;
+      // Teste 6. coloca 3 no endereço 2, utilizando o wet
+      data = 3;
+      #4;
+      weT = 1;
+      #4;
+      weT = 0;
+      // Teste 5 Fit
+      addrSec  = 1;
+      data  = 5;
+      #8
+      fit   = 1;
+      #4
+      fit   = 0;
+      #20
       
       $finish;
     end

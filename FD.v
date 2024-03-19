@@ -10,7 +10,6 @@ module FD (
  input select1,
  input select2,
  input select3,
- input select4,
  input zeraT,
  input contaT,
  input clearAndarAtual,
@@ -20,40 +19,48 @@ module FD (
  input enableRegDestino,
  input zeraAddrSecundario,
  input contaAddrSecundario,
+ input reset,
+ input fit,
  output chegouDestino,
  output bordaNovaEntrada,
  output fimT,
+ output ramSecDifZero,
  output [3:0] proxParada,
  output [3:0] andarAtual, // alterei pro TB
- output elevador_subindo,
- output finalRam,
- output carona,
- output [3:0]saidaSecundaria
+ output sentidoElevador,
+ output carona_origem,
+ output carona_destino,
+ output enableRegCaronaOrigem,
+ output temDestino,
+ output sobe
 );
 //Declaração de fios gerais 
 wire [3:0] proxAndarD, proxAndarS ; // proximo andar caso suba e proximo andar caso desça
-wire [3:0] saidaRegDestino, saidaRegOrigem;
-wire usuario_subindo, elevadorSubindo;
+wire [3:0] saidaRegDestino, saidaRegOrigem, saidaSecundaria;
+wire sentidoUsuario, elevadorSubindo, enderecoMaiorQueOrigem;
 wire [3:0] saidaSecundariaAnterior, addrSecundarioAnterior;
-wire proxAndarMaior, saidaSecMaior;
-wire [3:0] addrSecundario;
+wire objetivoMaiorAnterior, objetivoMenorAtual;
+wire [3:0] addrSecundario, caronaOrigem;
 
 
 // Multiplexadores
-wire [3:0] mux1, mux2, mux3, mux4;
+wire [3:0] mux1, mux2, mux3;
 assign mux1 = select1? saidaRegOrigem : saidaRegDestino ; // fio que entra da "data_in" da ram
 assign mux2 = select2? proxAndarS : proxAndarD ;
-assign mux3 = select3? saidaRegOrigem : saidaRegDestino; // redundante
-assign mux4 = select4? andarAtual : saidaSecundariaAnterior;
+assign mux3 = select3? andarAtual : saidaSecundariaAnterior;
+// Portas lógicas
 
-assign mesmoSentido = (usuario_subindo & elevador_subindo) | (~usuario_subindo & ~elevador_subindo);
-assign carona = mesmoSentido & (proxAndarMaior ^ saidaSecMaior);
+assign mesmoSentido     = ~(sentidoElevador ^ sentidoUsuario);
+assign carona_origem    = (mesmoSentido & objetivoMaiorAnterior & objetivoMenorAtual & ramSecDifZero);
+assign carona_destino   = (objetivoMaiorAnterior & objetivoMenorAtual & ramSecDifZero & enderecoMaiorQueOrigem);
+assign ramSecDifZero    = (saidaSecundaria[3] | saidaSecundaria[2] | saidaSecundaria[1] | saidaSecundaria[0]); 
+assign temDestino       = (proxParada[0] | proxParada[1] | proxParada[2] | proxParada[3]);
 
 // Registradores 
 
 registrador_4 andarAtual_reg (
     .clock      (clock),
-    .clear      (clearAndarAtual),
+    .clear      (reset),
     .enable     (enableAndarAtual),
     .D          (mux2),
     .Q          (andarAtual) 
@@ -74,7 +81,7 @@ comparador_85 destino_comp(
     .A      (proxParada), 
     .B      (andarAtual), 
     .ALBo   (), 
-    .AGBo   (), 
+    .AGBo   (sobe), 
     .AEBo   (chegouDestino)
 );
 
@@ -88,6 +95,7 @@ sync_ram_16x4_mod fila_ram(
     .addr   (4'b0000),
     .shift  (shift),
     .weT    (enableTopRAM),
+    .fit    (fit),
     .q      (proxParada),
     .saidaSecundaria (saidaSecundaria),
     .saidaSecundariaAnterior (saidaSecundariaAnterior)
@@ -95,13 +103,13 @@ sync_ram_16x4_mod fila_ram(
 
 edge_detector detectorDePedido(
     .clock  (clock),
-    .reset  (),
+    .reset  (reset),
     .sinal  (novaEntrada),
     .pulso  (bordaNovaEntrada)
 );
 
-// tive que tirar o #(x,y) para compilar
-contador_m timer_2seg(
+
+contador_m #(2000,14) timer_2seg(
     .clock      (clock),
     .zera_as    (),
     .zera_s     (zeraT),
@@ -113,7 +121,7 @@ contador_m timer_2seg(
 
 registrador_4 reg_origem(
     .clock      (clock),
-    .clear      (),
+    .clear      (reset),
     .enable     (enableRegOrigem),
     .D          (origem),
     .Q          (saidaRegOrigem)
@@ -121,53 +129,76 @@ registrador_4 reg_origem(
 
 registrador_4 reg_destino(
     .clock     (clock),
-    .clear     (),
+    .clear     (reset),
     .enable    (enableRegDestino),
     .D         (destino),
     .Q         (saidaRegDestino)
 );
 
+registrador_4 reg_carona_origem(
+    .clock     (clock),
+    .clear     (reset),
+    .enable    (enableRegCaronaOrigem),
+    .D         (addrSecundario),
+    .Q         (caronaOrigem)
+);
+
+
+
 comparador_85 sentido_usuario(
-    .ALBi   (),
-    .AGBi   (), 
+    .ALBi   (0),
+    .AGBi   (0), 
     .AEBi   (1'b1), 
     .A      (saidaRegDestino), 
     .B      (saidaRegOrigem), 
     .ALBo   (), 
-    .AGBo   (usuario_subindo), 
+    .AGBo   (sentidoUsuario), 
     .AEBo   ()
 );
 
 comparador_85 sentido_elevador(
-    .ALBi   (),
-    .AGBi   (), 
-    .AEBi   (1'b1), 
-    .A      (mux4), 
-    .B      (addrSecundario), 
-    .ALBo   (), 
-    .AGBo   (elevador_subindo), 
-    .AEBo   ()
-);
-
-comparador_85 compara_entrada_proxAndar(
-    .ALBi   (),
-    .AGBi   (), 
-    .AEBi   (1'b1), 
-    .A      (mux4), 
-    .B      (mux3), 
-    .ALBo   (), 
-    .AGBo   (proxAndarMaior), 
-    .AEBo   ()
-);
-
-comparador_85 compara_entrada_saidasecundaria(
-    .ALBi   (),
-    .AGBi   (), 
+    .ALBi   (0),
+    .AGBi   (0), 
     .AEBi   (1'b1), 
     .A      (saidaSecundaria), 
+    .B      (saidaSecundariaAnterior), 
+    .ALBo   (), 
+    .AGBo   (sentidoElevador), 
+    .AEBo   ()
+);
+
+
+
+comparador_85 verifica_se_maior(
+    .ALBi   (0),
+    .AGBi   (0), 
+    .AEBi   (1'b1), 
+    .A      (mux1), 
     .B      (mux3), 
     .ALBo   (), 
-    .AGBo   (saidaSecMaior), 
+    .AGBo   (objetivoMaiorAnterior), 
+    .AEBo   ()
+);
+
+comparador_85 verifica_se_menor(
+    .ALBi   (0),
+    .AGBi   (0), 
+    .AEBi   (1'b1), 
+    .A      (mux1), 
+    .B      (saidaSecundaria), 
+    .ALBo   (objetivoMenorAtual), 
+    .AGBo   (), 
+    .AEBo   ()
+);
+
+comparador_85 verifica_se_endereco_maior_que_origem(
+    .ALBi   (0),
+    .AGBi   (0), 
+    .AEBi   (1'b1), 
+    .A      (addrSecundario), 
+    .B      (caronaOrigem), 
+    .ALBo   (), 
+    .AGBo   (enderecoMaiorQueOrigem), 
     .AEBo   ()
 );
 
@@ -177,9 +208,10 @@ contador_p endereco_secundario(
     .zera_s     (zeraAddrSecundario),
     .conta      (contaAddrSecundario),
     .Q          (addrSecundario),
-    .fim        (finalRam),
+    .fim        (),
     .meio       ()
 );
+
 
 
 

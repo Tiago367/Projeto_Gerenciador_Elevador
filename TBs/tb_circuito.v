@@ -1,4 +1,4 @@
-`timescale 1ns/1ns
+`timescale 1us / 1us
 
 module tb_circuito;
 
@@ -9,11 +9,11 @@ wire dbQuintoBitEstado;
 circuito_final uut(iniciar, clock, origem, destino, novaEntrada, 
 reset, dbQuintoBitEstado
 );
-parameter clockPeriod = 20;
+parameter clockPeriod = 1;
 
 initial clock=0;
 
-always #10 clock = ~clock;
+always #1 clock = ~clock;
 
 initial begin
     iniciar = 0;
@@ -21,7 +21,9 @@ initial begin
     novaEntrada=0;
     origem = 4'b0000;
     destino = 4'b0000;
-
+    reset = 1;
+    #10;
+    reset = 0;
     #50;
     iniciar=1; 
     #50;
@@ -32,11 +34,22 @@ initial begin
     #50;
     novaEntrada = 0;
     #100;
-    #200000
+    #200
+    origem = 4'b0010; 
+    destino = 4'b0110;
+    #100
+    novaEntrada = 1;
+    #50;
+    novaEntrada = 0;
     #100;
-    #200;
-    #100;
-    #200;
+    #200
+    origem = 4'b1000; 
+    destino = 4'b0011;
+    #100
+    novaEntrada = 1;
+    #50;
+    novaEntrada = 0;
+    #100000;
    
 
 

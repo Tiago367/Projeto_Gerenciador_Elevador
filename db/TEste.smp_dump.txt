@@ -1,0 +1,15 @@
+
+State Machine - |circuito_final|unidade_controle:UC|Eatual
+Name Eatual.shift_fila Eatual.limpa_passageiro Eatual.sobe_andar Eatual.subindo Eatual.desce_andar Eatual.descendo Eatual.sobe_ou_desce Eatual.leva_passageiro Eatual.busca_passageiro Eatual.parado Eatual.inicializa_elementos Eatual.inicial 
+Eatual.inicial 0 0 0 0 0 0 0 0 0 0 0 0 
+Eatual.inicializa_elementos 0 0 0 0 0 0 0 0 0 0 1 1 
+Eatual.parado 0 0 0 0 0 0 0 0 0 1 0 1 
+Eatual.busca_passageiro 0 0 0 0 0 0 0 0 1 0 0 1 
+Eatual.leva_passageiro 0 0 0 0 0 0 0 1 0 0 0 1 
+Eatual.sobe_ou_desce 0 0 0 0 0 0 1 0 0 0 0 1 
+Eatual.descendo 0 0 0 0 0 1 0 0 0 0 0 1 
+Eatual.desce_andar 0 0 0 0 1 0 0 0 0 0 0 1 
+Eatual.subindo 0 0 0 1 0 0 0 0 0 0 0 1 
+Eatual.sobe_andar 0 0 1 0 0 0 0 0 0 0 0 1 
+Eatual.limpa_passageiro 0 1 0 0 0 0 0 0 0 0 0 1 
+Eatual.shift_fila 1 0 0 0 0 0 0 0 0 0 0 1 
